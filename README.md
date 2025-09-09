@@ -6,7 +6,8 @@
 
 [![Ruby](https://img.shields.io/badge/Ruby-2.6+-red.svg)](https://ruby-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-26%20passing-green.svg)](#testing)
+[![Tests](https://img.shields.io/badge/Tests-100+%20passing-green.svg)](#testing)
+[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://rubygems.org/gems/legal_summariser)
 
 ---
 
@@ -27,7 +28,8 @@
 
 ## Features
 
-- **Document Processing**: Supports PDF, DOCX, and plain text files
+### 🚀 Core Analysis
+- **Document Processing**: Supports PDF, DOCX, RTF, and plain text files
 - **Smart Summarisation**: Converts legal documents into concise plain English
 - **Clause Detection**: Automatically identifies key legal clauses including:
   - Data Processing & Privacy (GDPR/KVKK compliance)
@@ -40,8 +42,29 @@
   - Governing Law
 - **Risk Analysis**: Flags potential legal risks and unfair terms
 - **Compliance Checking**: Identifies gaps in GDPR, KVKK, and other regulations
-- **Multiple Output Formats**: JSON, Markdown, and plain text
-- **CLI Interface**: Command-line tool for batch processing
+
+### 🤖 AI/ML Features (v0.3.0)
+- **Plain Language Generator**: AI-powered legal text simplification with 30+ jargon mappings
+- **Model Training System**: Train custom legal language models (pattern-based, statistical, neural)
+- **Readability Scoring**: Calculate complexity reduction and readability metrics
+- **Fine-tuning Support**: Customize models for specific legal domains
+
+### 🌍 Multilingual Support
+- **8 Languages Supported**: English, Spanish, French, German, Italian, Portuguese, Turkish, Dutch
+- **Legal Term Translation**: Cross-language legal terminology mapping
+- **Cultural Adaptations**: Legal system-specific processing for different countries
+- **AI Translation Integration**: Support for external translation APIs
+
+### 📄 Advanced Output
+- **PDF Annotations**: Rich PDF output with highlighting, comments, and risk indicators
+- **Multiple Formats**: JSON, Markdown, plain text, and annotated PDF
+- **Batch Processing**: Process multiple documents simultaneously
+- **Performance Monitoring**: Built-in metrics and caching system
+
+### 🛠️ Developer Tools
+- **CLI Interface**: Comprehensive command-line tool
+- **Configuration System**: Flexible configuration with validation
+- **Caching System**: Result caching with TTL and size management
 - **Offline Processing**: Works without internet for sensitive documents
 
 ## Installation
@@ -73,41 +96,76 @@ require "legal_summariser"
 
 # Basic usage
 summary = LegalSummariser.summarise("contracts/nda.pdf")
-puts summary[:plain_text]
-# => "This Non-Disclosure Agreement establishes confidentiality, valid for 2 years. The company may terminate at any time..."
+puts summary[:plain_text]        # AI-generated plain language version
+puts summary[:summary]           # Original summary
+puts summary[:multilingual]      # Multi-language processing results
 
-# With options
+# Advanced AI features
 result = LegalSummariser.summarise("contract.pdf", {
   format: 'markdown',
-  max_sentences: 3
+  max_sentences: 3,
+  language: 'es',              # Process in Spanish
+  plain_language: true,        # Enable AI plain language generation
+  generate_annotations: true   # Create PDF annotations
 })
 
-# Access different parts of the analysis
+# Access AI-enhanced analysis
 puts result[:key_points]        # Key contract points
 puts result[:clauses]           # Detected legal clauses
 puts result[:risks]             # Risk analysis
-puts result[:metadata]          # Document metadata
+puts result[:plain_text]        # AI-simplified version
+puts result[:multilingual]      # Multi-language results
+puts result[:metadata]          # Enhanced metadata with AI metrics
+
+# Plain Language Generator
+generator = LegalSummariser::PlainLanguageGenerator.new
+plain_result = generator.generate("The party of the first part shall indemnify...")
+puts plain_result[:text]        # "The first party will compensate..."
+puts plain_result[:readability_score]  # Readability improvement metrics
+
+# Model Training
+trainer = LegalSummariser::ModelTrainer.new
+trainer.train_model('contract_model', training_data, type: 'statistical')
+trainer.fine_tune_model('contract_model', fine_tuning_data)
+
+# Multilingual Processing
+processor = LegalSummariser::MultilingualProcessor.new
+result = processor.process_multilingual("contract.pdf", source: 'en', target: 'es')
+
+# PDF Annotations
+annotator = LegalSummariser::PDFAnnotator.new
+annotator.create_annotated_pdf("contract.pdf", analysis_results, "annotated_contract.pdf")
 ```
 
 ### Command Line Interface
 
 ```bash
-# Analyze a document
+# Basic analysis
 legal_summariser analyze contract.pdf
 
-# Specify output format
-legal_summariser analyze contract.pdf --format markdown
+# AI-enhanced analysis with plain language
+legal_summariser analyze contract.pdf --plain-language --format markdown
 
-# Save to file
-legal_summariser analyze contract.pdf --output summary.md --format markdown
+# Multilingual processing
+legal_summariser analyze contract.pdf --language es --translate-to en
 
-# Run demo
+# Generate annotated PDF
+legal_summariser analyze contract.pdf --annotate --output annotated_contract.pdf
+
+# Batch processing with AI features
+legal_summariser batch contracts/ --plain-language --multilingual
+
+# Configuration and stats
+legal_summariser config --set language=es
+legal_summariser stats
+
+# Model management
+legal_summariser train-model --type statistical --data training_data.json
+legal_summariser list-models
+
+# Utility commands
 legal_summariser demo
-
-# Show supported formats
 legal_summariser supported_formats
-
-# Show version
 legal_summariser version
 ```
 
@@ -176,11 +234,16 @@ The system automatically detects and optimizes analysis for:
 - **Pattern matching**: For compliance gap identification
 
 ### Key Components
-- **TextExtractor**: Multi-format document parsing
-- **Summariser**: Plain English conversion engine
-- **ClauseDetector**: Legal clause identification
-- **RiskAnalyzer**: Risk assessment and flagging
-- **Formatter**: Multi-format output generation
+- **TextExtractor**: Multi-format document parsing (PDF, DOCX, RTF, TXT)
+- **Summariser**: Enhanced plain English conversion engine
+- **ClauseDetector**: Advanced legal clause identification
+- **RiskAnalyzer**: Comprehensive risk assessment and flagging
+- **PlainLanguageGenerator**: AI-powered legal text simplification
+- **ModelTrainer**: Custom model training and fine-tuning system
+- **MultilingualProcessor**: Cross-language processing and translation
+- **PDFAnnotator**: Rich PDF annotation and highlighting
+- **Formatter**: Multi-format output generation (JSON, Markdown, PDF)
+- **Cache & Performance**: Advanced caching and performance monitoring
 
 ## Development
 
@@ -206,9 +269,9 @@ gem install ./legal_summariser-*.gem
 ## Roadmap
 
 - **v0.1** ✅ Text extraction + basic summarisation
-- **v0.2** ✅ Clause detection + risk flagging  
-- **v0.3** 🔄 Plain language generator (fine-tuned models)
-- **v1.0** 📋 Multi-language support + PDF annotation output
+- **v0.2** ✅ Clause detection + risk flagging + performance enhancements
+- **v0.3** ✅ AI/ML features + multilingual support + PDF annotations
+- **v1.0** 📋 Advanced neural models + enterprise features + API service
 
 ## Contributing
 
@@ -234,7 +297,7 @@ This tool is designed to assist with legal document analysis but should not repl
 This project leverages my expertise in:
 
 - **Ruby Development**: Gem architecture, modular design patterns
-- **AI & NLP**: Rule-based text analysis, pattern recognition
+- **AI & NLP**: Advanced machine learning, neural networks, multilingual processing
 - **Cybersecurity**: Compliance frameworks (GDPR, KVKK), risk assessment
 - **Digital Forensics**: Legal document analysis, evidence extraction
 - **Software Engineering**: Test-driven development, CLI tools
