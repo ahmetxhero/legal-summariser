@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/legal_summariser'
+require 'thor'
+
+module LegalSummariser
+  class CLI < Thor
+    desc "analyze FILE", "Analyze a legal document and generate summary"
+    option :format, aliases: '-f', default: 'text', desc: 'Output format (json, markdown, text)'
+    option :output, aliases: '-o', desc: 'Output file path (optional)'
+    option :max_sentences, type: :numeric, default: 5, desc: 'Maximum sentences in summary'
+    def analyze(file_path)
+      begin
+        puts "Analyzing: #{file_path}"
+        puts "Format: #{options[:format]}"
+        puts "-" * 50
+        
+        # Perform analysis
+        results = LegalSummariser.summarise(file_path, {
+          format: options[:format],
+          max_sentences: options[:max_sentences]
+        })
+        
+        # Output results
+        if options[:output]
+          File.write(options[:output], results)
+          puts "Results saved to: #{options[:output]}"
+        else
+          puts results
+        end
+        
+      rescue LegalSummariser::DocumentNotFoundError => e
+        puts "Error: #{e.message}"
+        exit 1
+      rescue LegalSummariser::UnsupportedFormatError => e
+        puts "Error: #{e.message}"
+        exit 1
+      rescue => e
+        puts "Unexpected error: #{e.message}"
+        puts e.backtrace if ENV['DEBUG']
+        exit 1
+      end
+    end
+
+    desc "version", "Show version information"
+    def version
+      puts "Legal Summariser v#{LegalSummariser::VERSION}"
+      puts "Ruby-based AI-powered legal document analysis toolkit"
+    end
+
+    desc "supported_formats", "List supported document formats"
+    def supported_formats
+      puts "Supported document formats:"
+      puts "- PDF (.pdf)"
+      puts "- Microsoft Word (.docx)"
+      puts "- Plain text (.txt)"
+      puts ""
+      puts "Output formats:"
+      puts "- JSON (json)"
+      puts "- Markdown (markdown, md)"
+      puts "- Plain text (text, txt)"
+    end
+
+    desc "demo", "Run demo analysis on sample documents"
+    def demo
+      puts "Legal Summariser Demo"
+      puts "=" * 50
+      puts ""
+      
+      # Create sample NDA text for demo
+      sample_text = create_sample_nda
+      sample_file = "/tmp/sample_nda.txt"
+      File.write(sample_file, sample_text)
+      
+      puts "Analyzing sample NDA document..."
+      puts ""
+      
+      results = LegalSummariser.summarise(sample_file, { format: 'markdown' })
+      puts results
+      
+      # Clean up
+      File.delete(sample_file) if File.exist?(sample_file)
+    end
+
+    private
+
+    def create_sample_nda
+      <<~NDA
+        NON-DISCLOSURE AGREEMENT
+
+        This Non-Disclosure Agreement ("Agreement") is entered into on [DATE] between Company ABC ("Disclosing Party") and John Doe ("Receiving Party").
+
+        1. CONFIDENTIAL INFORMATION
+        The Disclosing Party may disclose certain confidential and proprietary information to the Receiving Party. Confidential information includes all technical data, trade secrets, know-how, research, product plans, products, services, customers, customer lists, markets, software, developments, inventions, processes, formulas, technology, designs, drawings, engineering, hardware configuration information, marketing, finances, or other business information.
+
+        2. OBLIGATIONS
+        The Receiving Party agrees to hold and maintain the Confidential Information in strict confidence for a period of two (2) years from the date of disclosure. The Receiving Party shall not disclose any Confidential Information to third parties without prior written consent.
+
+        3. LIABILITY
+        The Receiving Party shall be liable for any breach of this Agreement and shall indemnify the Disclosing Party against all claims, damages, and expenses arising from such breach.
+
+        4. TERMINATION
+        This Agreement may be terminated by either party with thirty (30) days written notice. Upon termination, all Confidential Information must be returned or destroyed.
+
+        5. GOVERNING LAW
+        This Agreement shall be governed by the laws of England and Wales. Any disputes shall be resolved through binding arbitration.
+
+        6. DATA PROTECTION
+        Both parties acknowledge their obligations under the General Data Protection Regulation (GDPR) regarding any personal data processed under this Agreement.
+
+        IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+      NDA
+    end
+  end
+end
+
+# Run CLI if called directly
+if __FILE__ == $0
+  LegalSummariser::CLI.start(ARGV)
+end
