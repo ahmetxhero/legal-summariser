@@ -5,19 +5,22 @@ require_relative "lib/legal_summariser/version"
 Gem::Specification.new do |spec|
   spec.name = "legal_summariser"
   spec.version = LegalSummariser::VERSION
-  spec.authors = ["Legal Summariser Team"]
-  spec.email = ["info@legal-summariser.com"]
+  spec.authors = ["Ahmet KAHRAMAN"]
+  spec.email = ["ahmetxhero@gmail.com"]
 
-  spec.summary = "AI-powered legal document summarisation and analysis toolkit"
-  spec.description = "A Ruby gem that summarises legal documents, extracts key clauses, flags risks, and converts legal jargon into plain English. Supports PDF/Word documents with offline processing capabilities."
-  spec.homepage = "https://github.com/legal-summariser/legal_summariser"
+  spec.summary = "AI-powered legal document analysis with multilingual support and PDF annotations"
+  spec.description = "Advanced Ruby gem for legal document analysis featuring AI-powered plain language generation, multilingual processing (8 languages), PDF annotations, model training, risk analysis, and clause detection. Supports PDF, DOCX, RTF formats with comprehensive CLI tools."
+  spec.homepage = "https://github.com/ahmetxhero/legal-summariser"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.6.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/legal-summariser/legal_summariser"
-  spec.metadata["changelog_uri"] = "https://github.com/legal-summariser/legal_summariser/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/ahmetxhero/legal-summariser"
+  spec.metadata["changelog_uri"] = "https://github.com/ahmetxhero/legal-summariser/blob/main/CHANGELOG.md"
+  spec.metadata["documentation_uri"] = "https://github.com/ahmetxhero/legal-summariser#readme"
+  spec.metadata["bug_tracker_uri"] = "https://github.com/ahmetxhero/legal-summariser/issues"
+  spec.metadata["wiki_uri"] = "https://github.com/ahmetxhero/legal-summariser/wiki"
 
   # Specify which files should be added to the gem when it is released.
   spec.files = Dir.chdir(__dir__) do
