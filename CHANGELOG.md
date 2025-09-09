@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-01-09
+
+### Added
+- **Plain Language Generator**: AI-powered legal text simplification with fine-tuned models
+- **Model Training System**: Complete training pipeline for custom legal language models
+- **Advanced Multilingual Support**: Enhanced processing for 8 languages with cultural adaptations
+- **PDF Annotation System**: Rich PDF output with highlighting, comments, and risk indicators
+- **AI/ML Integration**: Support for external AI APIs and local model training
+- **Advanced NLP Features**: Readability scoring, complexity reduction metrics, and text analysis
+
+### Enhanced
+- **Legal Text Processing**: 30+ legal jargon mappings and sentence pattern simplification
+- **Cross-Language Translation**: Legal term mapping across multiple languages
+- **Document Analysis**: Enhanced with plain language generation and multilingual processing
+- **Performance Monitoring**: Extended metrics for new AI/ML operations
+- **Error Handling**: Comprehensive error management for AI operations and model training
+
+### Technical Improvements
+- **Model Architecture**: Pattern-based, statistical, and neural model support
+- **Caching System**: Extended for translation and model results
+- **API Integration**: Support for external translation and AI services
+- **Cultural Adaptations**: Legal system-specific processing for different countries
+
 ## [0.2.0] - 2025-01-09
 
 ### Added

@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
-require_relative "legal_summariser/version"
-require_relative "legal_summariser/configuration"
-require_relative "legal_summariser/cache"
-require_relative "legal_summariser/performance_monitor"
-require_relative "legal_summariser/document_parser"
-require_relative "legal_summariser/text_extractor"
-require_relative "legal_summariser/summariser"
-require_relative "legal_summariser/clause_detector"
-require_relative "legal_summariser/risk_analyzer"
-require_relative "legal_summariser/formatter"
+require_relative 'legal_summariser/version'
+require_relative 'legal_summariser/text_extractor'
+require_relative 'legal_summariser/summariser'
+require_relative 'legal_summariser/clause_detector'
+require_relative 'legal_summariser/risk_analyzer'
+require_relative 'legal_summariser/formatter'
+require_relative 'legal_summariser/document_parser'
+require_relative 'legal_summariser/configuration'
+require_relative 'legal_summariser/cache'
+require_relative 'legal_summariser/performance_monitor'
+require_relative 'legal_summariser/plain_language_generator'
+require_relative 'legal_summariser/model_trainer'
+require_relative 'legal_summariser/multilingual_processor'
+require_relative 'legal_summariser/pdf_annotator'
 
 module LegalSummariser
   class Error < StandardError; end
@@ -68,12 +72,15 @@ module LegalSummariser
       
       # Format results
       result = {
+        file_path: file_path,
+        document_type: detect_document_type(text),
+        processing_time: monitor.end_timer(:total_analysis),
         plain_text: summary[:plain_text],
         key_points: summary[:key_points],
         clauses: clauses,
         risks: risks,
         metadata: {
-          document_type: detect_document_type(text),
+          file_size: File.size(file_path),
           word_count: text_stats[:word_count],
           character_count: text_stats[:character_count],
           sentence_count: text_stats[:sentence_count],
@@ -82,7 +89,8 @@ module LegalSummariser
           extraction_time_seconds: extraction_time.round(3),
           processed_at: Time.now.strftime("%Y-%m-%dT%H:%M:%S%z"),
           gem_version: VERSION,
-          language: configuration.language
+          language: configuration.language,
+          document_type: detect_document_type(text)
         },
         performance: monitor.stats
       }
