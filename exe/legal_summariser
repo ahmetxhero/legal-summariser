@@ -10,17 +10,27 @@ module LegalSummariser
     option :format, aliases: '-f', default: 'text', desc: 'Output format (json, markdown, text)'
     option :output, aliases: '-o', desc: 'Output file path (optional)'
     option :max_sentences, type: :numeric, default: 5, desc: 'Maximum sentences in summary'
+    option :verbose, aliases: '-v', type: :boolean, default: false, desc: 'Enable verbose logging'
+    option :cache, type: :boolean, default: false, desc: 'Enable result caching'
     def analyze(file_path)
       begin
+        # Configure logging and caching
+        configure_gem(options)
+        
         puts "Analyzing: #{file_path}"
         puts "Format: #{options[:format]}"
+        puts "Caching: #{options[:cache] ? 'enabled' : 'disabled'}"
         puts "-" * 50
+        
+        start_time = Time.now
         
         # Perform analysis
         results = LegalSummariser.summarise(file_path, {
           format: options[:format],
           max_sentences: options[:max_sentences]
         })
+        
+        end_time = Time.now
         
         # Output results
         if options[:output]
@@ -30,15 +40,24 @@ module LegalSummariser
           puts results
         end
         
+        if options[:verbose]
+          puts "\n" + "-" * 50
+          puts "Analysis completed in #{(end_time - start_time).round(3)}s"
+          puts "Performance stats available via 'legal_summariser stats'"
+        end
+        
       rescue LegalSummariser::DocumentNotFoundError => e
         puts "Error: #{e.message}"
         exit 1
       rescue LegalSummariser::UnsupportedFormatError => e
         puts "Error: #{e.message}"
         exit 1
+      rescue LegalSummariser::Error => e
+        puts "Processing error: #{e.message}"
+        exit 1
       rescue => e
         puts "Unexpected error: #{e.message}"
-        puts e.backtrace if ENV['DEBUG']
+        puts e.backtrace if options[:verbose] || ENV['DEBUG']
         exit 1
       end
     end
@@ -60,6 +79,107 @@ module LegalSummariser
       puts "- JSON (json)"
       puts "- Markdown (markdown, md)"
       puts "- Plain text (text, txt)"
+    end
+
+    desc "batch FILES", "Analyze multiple legal documents"
+    option :format, aliases: '-f', default: 'text', desc: 'Output format (json, markdown, text)'
+    option :output_dir, aliases: '-d', desc: 'Output directory for results'
+    option :verbose, aliases: '-v', type: :boolean, default: false, desc: 'Enable verbose logging'
+    option :cache, type: :boolean, default: true, desc: 'Enable result caching'
+    def batch(*file_paths)
+      if file_paths.empty?
+        puts "Error: No files specified"
+        puts "Usage: legal_summariser batch file1.pdf file2.docx ..."
+        exit 1
+      end
+      
+      configure_gem(options)
+      
+      puts "Batch processing #{file_paths.length} files..."
+      puts "-" * 50
+      
+      results = LegalSummariser.batch_summarise(file_paths, {
+        format: options[:format]
+      })
+      
+      # Process results
+      successful = results.count { |r| r[:success] }
+      failed = results.count { |r| !r[:success] }
+      
+      puts "\nBatch processing completed:"
+      puts "✓ Successful: #{successful}"
+      puts "✗ Failed: #{failed}" if failed > 0
+      
+      if options[:output_dir]
+        FileUtils.mkdir_p(options[:output_dir])
+        
+        results.each do |result|
+          next unless result[:success]
+          
+          filename = File.basename(result[:file_path], '.*') + '_analysis'
+          extension = case options[:format]
+                     when 'json' then '.json'
+                     when 'markdown', 'md' then '.md'
+                     else '.txt'
+                     end
+          
+          output_file = File.join(options[:output_dir], filename + extension)
+          File.write(output_file, result[:result])
+          puts "Saved: #{output_file}"
+        end
+      end
+    end
+
+    desc "stats", "Show performance and usage statistics"
+    def stats
+      stats = LegalSummariser.stats
+      
+      puts "Legal Summariser Statistics"
+      puts "=" * 50
+      
+      # Performance stats
+      if stats[:performance].any?
+        puts "\nPerformance:"
+        stats[:performance].each do |metric, data|
+          puts "  #{metric.to_s.tr('_', ' ').capitalize}:"
+          puts "    Count: #{data[:count]}"
+          puts "    Average: #{data[:average]}s"
+          puts "    Total: #{data[:total]}s"
+        end
+      end
+      
+      # Cache stats
+      puts "\nCache:"
+      cache_stats = stats[:cache]
+      if cache_stats[:enabled]
+        puts "  Status: Enabled"
+        puts "  Files: #{cache_stats[:file_count]}"
+        puts "  Size: #{cache_stats[:total_size_mb]} MB"
+      else
+        puts "  Status: Disabled"
+      end
+      
+      # Memory stats
+      memory = stats[:memory]
+      if memory[:available] != false
+        puts "\nMemory:"
+        puts "  Objects: #{memory[:object_count]}"
+        puts "  GC Count: #{memory[:gc_count]}"
+        puts "  Estimated Usage: #{memory[:memory_mb]} MB"
+      end
+    end
+
+    desc "config", "Show current configuration"
+    def config
+      config = LegalSummariser.configuration
+      
+      puts "Legal Summariser Configuration"
+      puts "=" * 50
+      puts "Language: #{config.language}"
+      puts "Max File Size: #{config.max_file_size / 1024 / 1024} MB"
+      puts "Timeout: #{config.timeout}s"
+      puts "Caching: #{config.enable_caching ? 'enabled' : 'disabled'}"
+      puts "Cache Directory: #{config.cache_dir}"
     end
 
     desc "demo", "Run demo analysis on sample documents"
@@ -84,6 +204,16 @@ module LegalSummariser
     end
 
     private
+
+    def configure_gem(options)
+      LegalSummariser.configure do |config|
+        if options[:verbose]
+          require 'logger'
+          config.logger = Logger.new(STDOUT, level: Logger::INFO)
+        end
+        config.enable_caching = options[:cache] if options.key?(:cache)
+      end
+    end
 
     def create_sample_nda
       <<~NDA
